@@ -1,4 +1,4 @@
-package com.triploguebe.dto;
+package com.triploguebe.friend.dto;
 
 public class FriendDecisionRequest {
 }
