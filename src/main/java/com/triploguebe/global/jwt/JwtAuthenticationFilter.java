@@ -3,6 +3,7 @@ package com.triploguebe.global.jwt;
 import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null && jwtProvider.validateToken(token)) {
                 String username = jwtProvider.getUsernameFromToken(token);
 
+                //DB에서 사용자 정보 가져오기
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 UsernamePasswordAuthenticationToken authentication =
@@ -41,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 null,
                                 userDetails.getAuthorities()
                         );
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
             chain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
@@ -59,15 +61,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
+    //쿠키에서 accessToken을 꺼냄
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
 
-    //에러 응답 JSON 반환
+    //에러 발생 시 JSON 형태로 응답
     private void setErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
