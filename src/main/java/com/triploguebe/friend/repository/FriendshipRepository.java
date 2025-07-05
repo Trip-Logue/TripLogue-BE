@@ -1,4 +1,8 @@
 package com.triploguebe.friend.repository;
 
-public class FriendshipRepository {
+import com.triploguebe.friend.entity.Friendship;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
+
 }
