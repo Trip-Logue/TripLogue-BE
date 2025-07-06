@@ -1,4 +1,7 @@
 package com.triploguebe.trip.repository;
 
-public class TripLocationRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.triploguebe.trip.entity.TripLocation;
+
+public interface TripLocationRepository extends JpaRepository<TripLocation, Long> {
 }
