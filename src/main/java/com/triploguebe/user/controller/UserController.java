@@ -48,6 +48,16 @@ public class UserController {
                 .body(userResponse);
     }
 
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request, Principal principal) {
+        String username = principal.getName();
+        userService.updatePassword(username, request.getOldPassword(), request.getNewPassword());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "요청에 성공했습니다.");
+        response.put("success", true);
+        return ResponseEntity.ok(response);
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         Map<String, Object> logoutResponse = new HashMap<>();
