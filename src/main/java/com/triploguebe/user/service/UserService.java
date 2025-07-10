@@ -78,6 +78,12 @@ public class UserService {
         return userResponse;
     }
 
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        userRepository.delete(user);
+
     public void updatePassword(String username, String oldPassword, String newPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));

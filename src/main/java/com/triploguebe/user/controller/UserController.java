@@ -48,6 +48,18 @@ public class UserController {
                 .body(userResponse);
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser(Principal principal) {
+        String username = principal.getName();
+
+        userService.deleteUser(username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "회원 탈퇴가 완료되었습니다.");
+        response.put("success", true);
+
+        return ResponseEntity.ok(response);
+
     @PutMapping("/password")
     public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request, Principal principal) {
         String username = principal.getName();
