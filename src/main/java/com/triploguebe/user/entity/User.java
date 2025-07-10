@@ -30,6 +30,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
 
     // 생성 시간 자동 저장

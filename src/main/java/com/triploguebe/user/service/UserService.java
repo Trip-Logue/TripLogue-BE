@@ -2,6 +2,7 @@ package com.triploguebe.user.service;
 
 import com.triploguebe.global.exception.CustomException;
 import com.triploguebe.global.exception.ErrorCode;
+import com.triploguebe.user.dto.ProfileUploadRequest;
 import com.triploguebe.user.dto.SignUpRequest;
 import com.triploguebe.user.dto.UserResponse;
 import com.triploguebe.user.entity.User;
@@ -76,5 +77,26 @@ public class UserService {
         userResponse.setToken(jwtToken);
 
         return userResponse;
+    }
+
+    public void updateProfile(String username, ProfileUploadRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setProfileImageUrl(request.getProfileImageUrl());
+
+        userRepository.save(user);
+    }
+
+    public UserResponse getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .profileImageUrl(user.getProfileImageUrl())
+                .build();
     }
 }
