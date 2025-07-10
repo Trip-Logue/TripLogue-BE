@@ -1,10 +1,11 @@
 package com.triploguebe.user.controller;
 
 import com.triploguebe.user.dto.LoginRequest;
-import com.triploguebe.user.dto.PasswordUpdateRequest;
 import com.triploguebe.user.dto.SignUpRequest;
 import com.triploguebe.user.dto.UserResponse;
 import com.triploguebe.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +59,24 @@ public class UserController {
         response.put("success", true);
 
         return ResponseEntity.ok(response);
+
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request, Principal principal) {
+        String username = principal.getName();
+        userService.updatePassword(username, request.getOldPassword(), request.getNewPassword());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "요청에 성공했습니다.");
+        response.put("success", true);
+        return ResponseEntity.ok(response);
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> logoutResponse = new HashMap<>();
+        logoutResponse.put("message", "정상적으로 로그아웃 처리되었습니다.");
+        logoutResponse.put("success", true);
+
+        return ResponseEntity.ok(logoutResponse);
     }
 
 }
