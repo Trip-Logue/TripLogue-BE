@@ -1,5 +1,6 @@
 package com.triploguebe.user.security;
 
+import com.triploguebe.user.entity.User;
 import com.triploguebe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +13,17 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
-    //추가
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다: " + username));
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
+                .password(user.getPassword())
+                .roles("USER")
+                .build();
+    }
 }
+
 
