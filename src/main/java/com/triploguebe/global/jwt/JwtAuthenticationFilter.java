@@ -36,10 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         if ((requestURI.equals("/api/users/login") && method.equals("POST")) ||
-                (requestURI.equals("/api/users/register") && method.equals("POST")) ||
-                requestURI.startsWith("/api/public/") ||
-                requestURI.equals("/") ||
-                requestURI.startsWith("/error")) {
+                (requestURI.equals("/api/users/signup") && method.equals("POST"))) {
 
             System.out.println("JWT 필터 건너뛰기: " + requestURI);
             chain.doFilter(request, response);
