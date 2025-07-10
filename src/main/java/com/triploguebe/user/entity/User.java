@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //id값 겹치지 않고 제대로 생성됨
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -30,7 +31,9 @@ public class User {
     private String email;
 
     private String profileImageUrl;
+
+    // 생성 시간 자동 저장
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 }
-
-
