@@ -28,6 +28,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
+        if ((requestURI.equals("/api/users/login") && method.equals("POST")) ||
+                (requestURI.equals("/api/users/register") && method.equals("POST")) ||
+                requestURI.startsWith("/api/public/") ||
+                requestURI.equals("/") ||
+                requestURI.startsWith("/error")) {
+
+            System.out.println("JWT 필터 건너뛰기: " + requestURI);
+            chain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
 
         try {
@@ -61,11 +75,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    //쿠키에서 accessToken을 꺼냄
     private String resolveToken(HttpServletRequest request) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("accessToken")) {
+                if (cookie.getName().equals("jwt")) {
                     return cookie.getValue();
                 }
             }
