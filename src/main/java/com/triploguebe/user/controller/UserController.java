@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.triploguebe.user.dto.ProfileUploadRequest;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,6 +86,7 @@ public class UserController {
         response.put("success", true);
 
         return ResponseEntity.ok(response);
+    }
 
     @PutMapping("/password")
     public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request, Principal principal) {
@@ -95,6 +97,7 @@ public class UserController {
         response.put("message", "요청에 성공했습니다.");
         response.put("success", true);
         return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
