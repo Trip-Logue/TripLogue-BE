@@ -2,6 +2,7 @@ package com.triploguebe.trip.dto;
 
 import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,5 +13,6 @@ public class TripResponse {
     private String title;
     private String description;
     private LocalDate visitedDate;
-    private String placeName;
+//    private LocationResponse location;
+    private List<String> photos;
 }
