@@ -1,5 +1,6 @@
 package com.triploguebe.trip.entity;
 
+import com.triploguebe.location.entity.Location;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -21,9 +22,9 @@ public class TripLog {
     private LocalDate createdDate;
     private LocalDate visitedDate;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @joinColumn(name = "location_id")
-//    private Location location;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     @PrePersist
     public void prePersist() {
