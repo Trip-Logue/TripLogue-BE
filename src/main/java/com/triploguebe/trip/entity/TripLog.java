@@ -38,10 +38,9 @@ public class TripLog {
 
     @PrePersist
     public void prePersist() {
-        this.createdDate = LocalDate.now(); // createdDate 자동 세팅
+        this.createdDate = LocalDate.now();
     }
 
-    // TripLog 수정 시 필드 개별 수정(x), 메서드로 한번에 관리
     public void update(String title, String description, LocalDate date, Location location) {
         this.title = title;
         this.description = description;
