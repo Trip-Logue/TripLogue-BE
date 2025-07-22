@@ -1,10 +1,14 @@
 package com.triploguebe.location.entity;
 
+import com.triploguebe.trip.entity.TripLog;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "locations")
@@ -33,4 +37,7 @@ public class Location {
 
     @Column(name = "description", length = 500)
     private String description;
+
+    @OneToMany(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<TripLog> tripLogs = new ArrayList<>();
 }

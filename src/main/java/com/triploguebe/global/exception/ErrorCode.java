@@ -15,7 +15,9 @@ public enum ErrorCode {
     DUPLICATE_USERNAME(400, "이미 존재하는 사용자 이름입니다."),
     DUPLICATE_EMAIL(400, "이미 존재하는 이메일입니다."),
     // 비밀번호
-    INVALID_PASSWORD(400, "기존 비밀번호가 일치하지 않습니다.");
+    INVALID_PASSWORD(400, "기존 비밀번호가 일치하지 않습니다."),
+    // 여행기록
+    TRIP_NOT_FOUND(404, "해당 여행 기록이 존재하지 않습니다.");
 
     private final int status;
     private final String message;
