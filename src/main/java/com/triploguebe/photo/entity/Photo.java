@@ -12,11 +12,14 @@ import java.time.LocalDate;
 @Builder
 public class Photo {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long photoId;
 
     private String imageUrl;
     private LocalDate uploadedDate;
 
+    private Long tripLogId;
 }
+
 
