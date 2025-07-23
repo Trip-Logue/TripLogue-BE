@@ -1,5 +1,7 @@
 package com.triploguebe.location.service;
 
+import com.triploguebe.global.exception.CustomException;
+import com.triploguebe.global.exception.ErrorCode;
 import com.triploguebe.location.dto.LocationResponse;
 import com.triploguebe.location.entity.Location;
 import com.triploguebe.location.repository.LocationRepository;
@@ -58,7 +60,7 @@ public class LocationService {
 
     public Location findLocationById(Long locationId) {
         return locationRepository.findById(locationId)
-                .orElseThrow(() -> new RuntimeException("Location not found with id: " + locationId));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_LOCATION));
     }
 
     public boolean existsById(Long locationId) {

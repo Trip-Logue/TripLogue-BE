@@ -17,6 +17,7 @@ public enum ErrorCode {
     // 비밀번호
     INVALID_PASSWORD(400, "기존 비밀번호가 일치하지 않습니다."),
     // 여행기록
+    INVALID_LOCATION(400, "위치 정보가 올바르지 않습니다."),
     TRIP_NOT_FOUND(404, "해당 여행 기록이 존재하지 않습니다.");
 
     private final int status;

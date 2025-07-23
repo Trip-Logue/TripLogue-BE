@@ -8,6 +8,7 @@ import com.triploguebe.location.service.LocationService;
 import com.triploguebe.photo.entity.Photo;
 import com.triploguebe.trip.entity.TripLog;
 import com.triploguebe.user.entity.User;
+import com.triploguebe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.triploguebe.trip.dto.*;
@@ -22,8 +23,9 @@ public class TripService {
 
     private final TripLogRepository tripLogRepository;
     private final LocationService locationService;
+    private final UserRepository userRepository;
 
-    public Long createTrip(TripCreateRequest request, User user) {
+    public TripCreateResponse createTrip(TripCreateRequest request, User user) {
         Location location = locationService.findLocationById(request.getLocationId());
 
         TripLog tripLog = TripLog.builder()
@@ -34,8 +36,9 @@ public class TripService {
                 .user(user)
                 .build();
 
-        tripLogRepository.save(tripLog);
-        return tripLog.getTriplogId();
+        TripLog savedTripLog = tripLogRepository.save(tripLog);
+
+        return new TripCreateResponse(savedTripLog.getTriplogId(), "여행 기록이 등록되었습니다.");
     }
 
     public void updateTrip(Long triplogId, TripUpdateRequest request, User user) {
