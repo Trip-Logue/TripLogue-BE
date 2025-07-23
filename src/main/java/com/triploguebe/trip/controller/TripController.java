@@ -25,4 +25,11 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PutMapping("/{triplogId}")
+    public ResponseEntity<TripCreateResponse> updateTrip(@PathVariable Long triplogId, @RequestBody @Valid TripUpdateRequest request, @AuthenticationPrincipal User user) {
+
+        TripCreateResponse response = tripService.updateTrip(triplogId, request, user);
+
+        return ResponseEntity.ok(response);
+    }
 }

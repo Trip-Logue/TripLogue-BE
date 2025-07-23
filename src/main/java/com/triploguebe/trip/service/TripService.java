@@ -41,13 +41,15 @@ public class TripService {
         return new TripCreateResponse(savedTripLog.getTriplogId(), "여행 기록이 등록되었습니다.");
     }
 
-    public void updateTrip(Long triplogId, TripUpdateRequest request, User user) {
+    public TripCreateResponse updateTrip(Long triplogId, TripUpdateRequest request, User user) {
         TripLog tripLog = getTripLog(triplogId);
         validateUser(tripLog, user);
 
         Location location = locationService.findLocationById(request.getLocationId());
 
         tripLog.update(request.getTitle(), request.getDescription(), request.getVisitedDate(), location);
+
+        return new TripCreateResponse(triplogId, "여행 정보가 수정되었습니다.");
     }
 
     public void deleteTrip(Long triplogId, User user) {
