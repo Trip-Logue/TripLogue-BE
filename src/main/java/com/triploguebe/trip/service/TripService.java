@@ -74,17 +74,17 @@ public class TripService {
         );
     }
 
-    public List<TripResponse> getAllTrips(User user) {
+    public List<TripSummaryResponse> getAllTrips(User user) {
         return tripLogRepository.findByUser(user).stream()
-                .map(trip -> new TripResponse(
+                .map(trip -> new TripSummaryResponse(
                         trip.getTriplogId(),
                         trip.getTitle(),
-                        trip.getDescription(),
                         trip.getVisitedDate(),
-                        LocationResponse.from(trip.getLocation()),
                         trip.getPhotos().stream()
+                                .findFirst()
                                 .map(Photo::getImageUrl)
-                                .collect(Collectors.toList())
+                                .orElse(null),
+                        trip.getLocation() != null ? trip.getLocation().getLocationName() : null
                 ))
                 .collect(Collectors.toList());
     }
