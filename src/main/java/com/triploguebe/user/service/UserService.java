@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 
+import static com.triploguebe.global.exception.ErrorCode.USER_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -102,14 +104,14 @@ public class UserService {
 
     public void deleteUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         userRepository.delete(user);
     }
 
     public void updatePassword(String username, String oldPassword, String newPassword) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(()-> new CustomException(USER_NOT_FOUND));
 
         // 기존 비밀번호 검증
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
@@ -119,4 +121,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+    // 일반 서비스 코드(여행 등록, 수정)에서 유저 조회 필요
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+    }
+
 }

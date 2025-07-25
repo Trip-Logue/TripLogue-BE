@@ -13,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.triploguebe.trip.dto.*;
 import com.triploguebe.trip.repository.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,12 +40,13 @@ public class TripService {
 
         TripLog savedTripLog = tripLogRepository.save(tripLog);
 
-        return new TripCreateResponse(savedTripLog.getTriplogId(), "여행 기록이 등록되었습니다.");
+        return new TripCreateResponse(savedTripLog.getId(), "여행 기록이 등록되었습니다.");
     }
 
+    @Transactional
     public TripCreateResponse updateTrip(Long triplogId, TripUpdateRequest request, User user) {
         TripLog tripLog = getTripLog(triplogId);
-        validateUser(tripLog, user);
+        validateUser(user,tripLog);
 
         Location location = locationService.findLocationById(request.getLocationId());
 
@@ -52,9 +55,10 @@ public class TripService {
         return new TripCreateResponse(triplogId, "여행 정보가 수정되었습니다.");
     }
 
+    @Transactional
     public void deleteTrip(Long triplogId, User user) {
         TripLog tripLog = getTripLog(triplogId);
-        validateUser(tripLog, user);
+        validateUser(user, tripLog);
 
         tripLogRepository.delete(tripLog);
     }
@@ -63,7 +67,7 @@ public class TripService {
         TripLog tripLog = getTripLog(triplogId);
 
         return new TripResponse(
-                tripLog.getTriplogId(),
+                tripLog.getId(),
                 tripLog.getTitle(),
                 tripLog.getDescription(),
                 tripLog.getVisitedDate(),
@@ -77,7 +81,7 @@ public class TripService {
     public List<TripSummaryResponse> getAllTrips(User user) {
         return tripLogRepository.findByUser(user).stream()
                 .map(trip -> new TripSummaryResponse(
-                        trip.getTriplogId(),
+                        trip.getId(),
                         trip.getTitle(),
                         trip.getVisitedDate(),
                         trip.getPhotos().stream()
@@ -90,12 +94,12 @@ public class TripService {
     }
 
     private TripLog getTripLog(Long triplogId) {
-        return tripLogRepository.findById(triplogId)
+        return tripLogRepository.findByIdWithUser(triplogId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
     }
 
-    private void validateUser(TripLog tripLog, User user) {
-        if (!tripLog.getUser().equals(user)) {
+    private void validateUser(User user, TripLog tripLog) {
+        if (tripLog.getUser() == null || !Objects.equals(tripLog.getUser().getId(), user.getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }

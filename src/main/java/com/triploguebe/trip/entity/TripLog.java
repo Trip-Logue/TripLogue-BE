@@ -16,8 +16,10 @@ import java.util.List;
 @Builder
 public class TripLog {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long triplogId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "triplog_id")
+    private Long id;
 
     private String title;
     private String description;
@@ -27,6 +29,7 @@ public class TripLog {
     private LocalDate visitedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
