@@ -75,7 +75,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/me")
     public ResponseEntity<?> deleteUser(Principal principal) {
         String username = principal.getName();
 
