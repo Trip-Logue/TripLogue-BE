@@ -1,10 +1,14 @@
 package com.triploguebe.photo.service;
 
+import com.triploguebe.global.exception.CustomException;
+import com.triploguebe.global.exception.ErrorCode;
 import com.triploguebe.photo.dto.PhotoResponse;
 import com.triploguebe.photo.dto.PhotoUpdateRequest;
 import com.triploguebe.photo.dto.PhotoUploadRequest;
 import com.triploguebe.photo.entity.Photo;
 import com.triploguebe.photo.repository.PhotoRepository;
+import com.triploguebe.trip.entity.TripLog;
+import com.triploguebe.trip.repository.TripLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +23,16 @@ import java.util.stream.Collectors;
 public class PhotoService {
 
     private final PhotoRepository photoRepository;
+    private final TripLogRepository tripLogRepository;
 
     //사진 업로드
     @Transactional
     public PhotoResponse uploadPhoto(PhotoUploadRequest request) {
+        TripLog tripLog = tripLogRepository.findById(request.getTriplogId())
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
         Photo photo = Photo.builder()
-                .tripLogId(request.getTriplogId())
+                .tripLog(tripLog)  // 연관관계 설정
                 .imageUrl(request.getImageUrl())
                 .uploadedDate(LocalDate.now())
                 .build();

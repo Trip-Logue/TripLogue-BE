@@ -1,5 +1,6 @@
 package com.triploguebe.photo.entity;
 
+import com.triploguebe.trip.entity.TripLog;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -19,7 +20,9 @@ public class Photo {
     private String imageUrl;
     private LocalDate uploadedDate;
 
-    private Long tripLogId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "triplog_id")
+    private TripLog tripLog;
 }
 
 
