@@ -32,7 +32,7 @@ public class PhotoService {
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
 
         Photo photo = Photo.builder()
-                .tripLog(tripLog)  // 연관관계 설정
+                .tripLog(tripLog)
                 .imageUrl(request.getImageUrl())
                 .uploadedDate(LocalDate.now())
                 .build();
