@@ -96,7 +96,6 @@ public class JwtProvider {
                 .compact();
     }
 
-    // refreshToken 추출 유틸 (선택)
     public String extractTokenFromCookie(HttpServletRequest request, String cookieName) {
         if (request.getCookies() == null) return null;
 

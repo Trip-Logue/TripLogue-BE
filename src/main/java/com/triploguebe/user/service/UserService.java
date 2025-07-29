@@ -77,17 +77,15 @@ public class UserService {
 
         List<String> roles = Collections.singletonList("USER");
 
-        // 액세스 토큰 생성 (예: 1시간 유효)
+        // 액세스 토큰 생성
         String accessToken = jwtProvider.createToken(user.getUsername(), roles, 1000L * 60 * 60);
 
-        // 리프레시 토큰 생성 (예: 14일 유효)
+        // 리프레시 토큰 생성
         String refreshToken = jwtProvider.createRefreshToken(user.getUsername(), 1000L * 60 * 60 * 24 * 14);
 
-        // User 엔티티에 리프레시 토큰 저장
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        // 리프레시 토큰을 HttpOnly 쿠키로 생성
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(secureCookie) // HTTPS면 true로 바꾸기
@@ -95,21 +93,19 @@ public class UserService {
                 .maxAge(60 * 60 * 24 * 14) // 14일
                 .build();
 
-        // 쿠키를 Response에 추가
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        // UserResponse에 액세스 토큰 포함해서 반환
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
         userResponse.setProfileImageUrl(user.getProfileImageUrl());
-        userResponse.setToken(accessToken); // 액세스 토큰
+        userResponse.setToken(accessToken);
 
         return userResponse;
     }
 
-    // 리프레시 토큰 유효성 검증 메서드
+    // 리프레시 토큰 유효성 검증
     public boolean isRefreshTokenValid(String username, String refreshToken) {
         return userRepository.findByUsername(username)
                 .map(user -> refreshToken.equals(user.getRefreshToken()))

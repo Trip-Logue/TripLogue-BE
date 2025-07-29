@@ -5,13 +5,11 @@ import com.triploguebe.user.dto.*;
 import com.triploguebe.user.dto.LoginRequest;
 import com.triploguebe.user.dto.SignUpRequest;
 import com.triploguebe.user.dto.UserResponse;
-import com.triploguebe.user.repository.UserRepository;
 import com.triploguebe.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,11 +28,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
-
-    @Value("${custom.cookie.secure}")
-    private boolean secureCookie;
 
     @PostMapping("/signup")
     public ResponseEntity<UserResponse> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -66,7 +60,6 @@ public class UserController {
 
         String username = jwtProvider.getUsernameFromToken(refreshToken);
 
-        // UserService의 isRefreshTokenValid() 메서드 사용
         if (!userService.isRefreshTokenValid(username, refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 일치하지 않습니다.");
         }
@@ -74,7 +67,6 @@ public class UserController {
         List<String> roles = Collections.singletonList("USER");
         String newAccessToken = jwtProvider.createToken(username, roles, 1000L * 60 * 60);
 
-        // 새로운 리프레시 토큰 생성 및 저장 + 쿠키에 넣기
         String newRefreshToken = userService.renewRefreshToken(username, response);
 
         Map<String, String> tokenMap = new HashMap<>();
@@ -135,7 +127,6 @@ public class UserController {
     public ResponseEntity<?> logout(HttpServletRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // UserService에서 리프레시 토큰 삭제
         userService.removeRefreshToken(username);
 
         return ResponseEntity.ok("정상적으로 로그아웃 처리되었습니다.");
