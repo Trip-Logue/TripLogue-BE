@@ -36,7 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         if ((requestURI.equals("/api/users/login") && method.equals("POST")) ||
-                (requestURI.equals("/api/users/signup") && method.equals("POST"))) {
+                (requestURI.equals("/api/users/signup") && method.equals("POST")) ||
+                (requestURI.equals("/api/users/refresh") && method.equals("POST"))) {
 
             System.out.println("JWT 필터 건너뛰기: " + requestURI);
             chain.doFilter(request, response);
@@ -76,14 +77,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
+    //  Authorization 헤더에서 토큰을 먼저 꺼내고, 없으면 쿠키에서 찾음
     private String resolveToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 "Bearer {token}" 형식으로 꺼내기
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        // 2. Authorization 헤더 없으면 쿠키에서 "jwt" 또는 "refreshToken" 토큰 찾기
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("jwt")) {
+                if (cookie.getName().equals("jwt") || cookie.getName().equals("refreshToken")) {
                     return cookie.getValue();
                 }
             }
         }
+
         return null;
     }
 
