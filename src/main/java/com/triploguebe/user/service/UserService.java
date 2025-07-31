@@ -8,7 +8,11 @@ import com.triploguebe.user.dto.UserResponse;
 import com.triploguebe.user.entity.User;
 import com.triploguebe.user.repository.UserRepository;
 import com.triploguebe.global.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +28,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+
+    @Value("${custom.cookie.secure}")
+    private boolean secureCookie;
 
     private final long EXPIRE_MILLIS = 1000L * 60 * 60 * 24;
 
@@ -60,7 +67,7 @@ public class UserService {
                 .build();
     }
 
-    public UserResponse login(String username, String password) {
+    public UserResponse login(String username, String password, HttpServletResponse response) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
@@ -69,16 +76,69 @@ public class UserService {
         }
 
         List<String> roles = Collections.singletonList("USER");
-        String jwtToken = jwtProvider.createToken(user.getUsername(), roles, EXPIRE_MILLIS);
+
+        // 액세스 토큰 생성
+        String accessToken = jwtProvider.createToken(user.getUsername(), roles, 1000L * 60 * 60);
+
+        // 리프레시 토큰 생성
+        String refreshToken = jwtProvider.createRefreshToken(user.getUsername(), 1000L * 60 * 60 * 24 * 14);
+
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(secureCookie) // HTTPS면 true로 바꾸기
+                .path("/")
+                .maxAge(60 * 60 * 24 * 14) // 14일
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
         userResponse.setProfileImageUrl(user.getProfileImageUrl());
-        userResponse.setToken(jwtToken);
+        userResponse.setToken(accessToken);
 
         return userResponse;
+    }
+
+    // 리프레시 토큰 유효성 검증
+    public boolean isRefreshTokenValid(String username, String refreshToken) {
+        return userRepository.findByUsername(username)
+                .map(user -> refreshToken.equals(user.getRefreshToken()))
+                .orElse(false);
+    }
+
+    // 로그아웃 시 리프레시 토큰 삭제
+    public void removeRefreshToken(String username) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setRefreshToken(null);
+            userRepository.save(user);
+        });
+    }
+
+    // refreshToken 재발급(리프레시 토큰이 유효할 때)
+    public String renewRefreshToken(String username, HttpServletResponse response) {
+        String newRefreshToken = jwtProvider.createRefreshToken(username, 1000L * 60 * 60 * 24 * 14);
+
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setRefreshToken(newRefreshToken);
+            userRepository.save(user);
+        });
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                .httpOnly(true)
+                .secure(secureCookie)
+                .path("/")
+                .maxAge(60 * 60 * 24 * 14)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return newRefreshToken;
     }
 
     public void updateProfile(String username, ProfileUploadRequest request) {
