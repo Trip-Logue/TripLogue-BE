@@ -18,7 +18,12 @@ public enum ErrorCode {
     INVALID_PASSWORD(400, "기존 비밀번호가 일치하지 않습니다."),
     // 여행기록
     INVALID_LOCATION(400, "위치 정보가 올바르지 않습니다."),
-    TRIP_NOT_FOUND(404, "해당 여행 기록이 존재하지 않습니다.");
+    TRIP_NOT_FOUND(404, "해당 여행 기록이 존재하지 않습니다."),
+    //친구 요청 관련
+    ALREADY_FRIENDS(400, "이미 요청을 보냈거나 친구입니다."),
+    FRIENDSHIP_NOT_FOUND(404, "친구 요청을 찾을 수 없습니다."),
+    CANNOT_ADD_SELF(400, "자기 자신은 친구로 추가할 수 없습니다.");
+
 
     private final int status;
     private final String message;
