@@ -35,8 +35,10 @@ public class FriendController {
     }
 
     @PutMapping("/reject")
-    public void reject(@RequestBody FriendDecisionRequest dto) {
-        // TODO: 친구 요청 거절
+    public void reject(@RequestBody FriendDecisionRequest dto,
+                       @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        friendService.rejectFriend(dto, user.getId());
     }
 
     @GetMapping("/request/sent")
