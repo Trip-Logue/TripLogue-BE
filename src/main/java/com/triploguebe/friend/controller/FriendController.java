@@ -4,7 +4,11 @@ import com.triploguebe.friend.dto.FriendDecisionRequest;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.service.FriendService;
+import com.triploguebe.user.entity.User;
+import com.triploguebe.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -16,6 +20,7 @@ import java.util.List;
 public class FriendController {
 
     private final FriendService friendService;
+    private final UserService userService;
 
     @PostMapping("/request")
     public void sendRequest(@RequestBody FriendRequestDto dto) {
@@ -23,8 +28,10 @@ public class FriendController {
     }
 
     @PutMapping("/accept")
-    public void accept(@RequestBody FriendDecisionRequest dto) {
-        // TODO: 친구 요청 수락
+    public void accept(@RequestBody FriendDecisionRequest dto,
+                       @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        friendService.acceptFriend(dto, user.getId());
     }
 
     @PutMapping("/reject")
