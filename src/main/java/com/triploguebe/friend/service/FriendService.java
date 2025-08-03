@@ -8,6 +8,7 @@ import com.triploguebe.friend.entity.FriendshipStatus;
 import com.triploguebe.friend.repository.FriendshipRepository;
 import com.triploguebe.global.exception.CustomException;
 import com.triploguebe.global.exception.ErrorCode;
+import com.triploguebe.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,15 @@ public class FriendService {
     public List<FriendResponseDto> getReceivedRequests(Long userId) {
         List<Friendship> friendships = friendshipRepository.findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING);
         return friendships.stream()
-                .map(FriendResponseDto::new)
+                .map(friendship -> {
+                    User sender = friendship.getRequester(); // 요청 보낸 사람
+                    return new FriendResponseDto(
+                            friendship.getFriendshipId(),
+                            sender.getId(),
+                            sender.getUsername(),
+                            friendship.getRequestDate().toString()
+                    );
+                })
                 .toList();
     }
 
