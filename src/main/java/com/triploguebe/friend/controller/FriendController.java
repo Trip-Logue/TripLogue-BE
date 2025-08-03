@@ -60,8 +60,7 @@ public class FriendController {
 
     @GetMapping("/request/received")
     public List<FriendResponseDto> getReceivedRequests(@RequestParam Long userId) {
-        // TODO: 받은 친구 요청 목록 조회
-        return Collections.emptyList();
+        return friendService.getReceivedRequests(userId);
     }
 
     @GetMapping("/friends")
