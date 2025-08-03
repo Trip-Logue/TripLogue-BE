@@ -1,6 +1,7 @@
 package com.triploguebe.friend.controller;
 
 import com.triploguebe.friend.dto.FriendDecisionRequest;
+import com.triploguebe.friend.dto.FriendDetailResponseDto;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.service.FriendService;
@@ -59,7 +60,9 @@ public class FriendController {
     }
 
     @GetMapping("/request/received")
-    public List<FriendResponseDto> getReceivedRequests(@RequestParam Long userId) {
+    public List<FriendResponseDto> getReceivedRequests(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        Long userId = user.getId();
         return friendService.getReceivedRequests(userId);
     }
 
