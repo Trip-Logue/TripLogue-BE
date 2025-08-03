@@ -7,12 +7,15 @@ import com.triploguebe.friend.service.FriendService;
 import com.triploguebe.user.entity.User;
 import com.triploguebe.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/friend")
@@ -28,17 +31,25 @@ public class FriendController {
     }
 
     @PutMapping("/accept")
-    public void accept(@RequestBody FriendDecisionRequest dto,
-                       @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, String>> accept(@RequestBody FriendDecisionRequest dto,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByUsername(userDetails.getUsername());
         friendService.acceptFriend(dto, user.getId());
+
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "친구 요청을 수락했습니다.");
+        return ResponseEntity.ok(body);
     }
 
     @PutMapping("/reject")
-    public void reject(@RequestBody FriendDecisionRequest dto,
-                       @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, String>> reject(@RequestBody FriendDecisionRequest dto,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByUsername(userDetails.getUsername());
         friendService.rejectFriend(dto, user.getId());
+
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "친구 요청을 거절했습니다.");
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping("/request/sent")
