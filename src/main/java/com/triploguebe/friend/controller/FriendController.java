@@ -53,6 +53,17 @@ public class FriendController {
         return ResponseEntity.ok(body);
     }
 
+    @GetMapping("/{friendId}")
+    public ResponseEntity<FriendDetailResponseDto> getFriendDetail(
+            @PathVariable Long friendId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        Long currentUserId = user.getId();
+        FriendDetailResponseDto friendDetail = friendService.getFriendDetail(currentUserId, friendId);
+        return ResponseEntity.ok(friendDetail);
+    }
+
     @GetMapping("/request/sent")
     public List<FriendResponseDto> getSentRequests(@RequestParam Long userId) {
         // TODO: 보낸 친구 요청 목록 조회
