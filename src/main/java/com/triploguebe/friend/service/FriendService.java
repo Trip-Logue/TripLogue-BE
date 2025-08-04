@@ -1,6 +1,7 @@
 package com.triploguebe.friend.service;
 
 import com.triploguebe.friend.dto.FriendDecisionRequest;
+import com.triploguebe.friend.dto.FriendDetailResponseDto;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.entity.Friendship;
@@ -9,6 +10,7 @@ import com.triploguebe.friend.repository.FriendshipRepository;
 import com.triploguebe.global.exception.CustomException;
 import com.triploguebe.global.exception.ErrorCode;
 import com.triploguebe.user.entity.User;
+import com.triploguebe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import java.util.List;
 public class FriendService {
 
     private final FriendshipRepository friendshipRepository;
+    private final UserRepository userRepository;
 
     public void sendFriendRequest(FriendRequestDto dto) {
         // TODO: 친구 요청 저장
@@ -60,6 +63,23 @@ public class FriendService {
                 .toList();
     }
 
+    public FriendDetailResponseDto getFriendDetail(Long requesterId, Long targetUserId) {
+        // 순서 상관없이 친구 관계 조회
+        Friendship friendship = friendshipRepository
+                .findFriendshipBetweenUsersWithStatus(requesterId, targetUserId, FriendshipStatus.ACCEPTED)
+                .orElseThrow(() -> new CustomException(ErrorCode.FRIEND_NOT_FOUND));
+
+        // 친구 정보 조회 (targetUserId 기준)
+        User friend = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return new FriendDetailResponseDto(
+                friend.getId(),
+                friend.getUsername(),
+                friend.getProfileImageUrl()
+        );
+    }
+
     public List<FriendResponseDto> getFriends(Long userId) {
         // TODO: 내 친구 목록 조회
         return null;
@@ -67,7 +87,7 @@ public class FriendService {
 
     // 요청 상태가 PENDING인 경우
     private Friendship findPendingFriendshipOrThrow(Long requestId) {
-        return friendshipRepository.findByIdAndStatus(requestId, FriendshipStatus.PENDING)
+        return friendshipRepository.findByFriendshipIdAndStatus(requestId, FriendshipStatus.PENDING)
                 .orElseThrow(() -> new CustomException(ErrorCode.FRIENDSHIP_NOT_FOUND));
     }
 
