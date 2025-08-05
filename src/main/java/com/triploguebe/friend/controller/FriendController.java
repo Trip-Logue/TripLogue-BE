@@ -26,9 +26,10 @@ public class FriendController {
     private final FriendService friendService;
     private final UserService userService;
 
+    //친구 요청
     @PostMapping("/request")
     public void sendRequest(@RequestBody FriendRequestDto dto) {
-        // TODO: 친구 요청 보내기
+        friendService.sendFriendRequest(dto);
     }
 
     @PutMapping("/accept")
@@ -64,8 +65,10 @@ public class FriendController {
         return ResponseEntity.ok(friendDetail);
     }
 
+    //보낸 친구 요청 목록
     @GetMapping("/request/sent")
     public List<FriendResponseDto> getSentRequests(@RequestParam Long userId) {
+        return friendService.getSentRequests(userId);
         // TODO: 보낸 친구 요청 목록 조회
         return Collections.emptyList();
     }
@@ -77,9 +80,21 @@ public class FriendController {
         return friendService.getReceivedRequests(userId);
     }
 
+    //친구 목록
     @GetMapping("/friends")
     public List<FriendResponseDto> getFriends(@RequestParam Long userId) {
-        // TODO: 친구 목록 조회
-        return Collections.emptyList();
+        return friendService.getFriends(userId);
+    }
+
+    //친구 정보
+    @GetMapping("/{friendshipId}")
+    public FriendResponseDto getFriend(@PathVariable Long friendshipId) {
+        return friendService.getFriend(friendshipId);
+    }
+
+    //친구 삭제
+    @DeleteMapping("/{friendshipId}")
+    public void deleteFriend(@PathVariable Long friendshipId, @RequestParam Long userId) {
+        friendService.deleteFriend(friendshipId, userId);
     }
 }
