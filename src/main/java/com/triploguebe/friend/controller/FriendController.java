@@ -1,14 +1,22 @@
 package com.triploguebe.friend.controller;
 
 import com.triploguebe.friend.dto.FriendDecisionRequest;
+import com.triploguebe.friend.dto.FriendDetailResponseDto;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.service.FriendService;
+import com.triploguebe.user.entity.User;
+import com.triploguebe.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/friend")
@@ -16,6 +24,7 @@ import java.util.List;
 public class FriendController {
 
     private final FriendService friendService;
+    private final UserService userService;
 
     @PostMapping("/request")
     public void sendRequest(@RequestBody FriendRequestDto dto) {
@@ -23,13 +32,36 @@ public class FriendController {
     }
 
     @PutMapping("/accept")
-    public void accept(@RequestBody FriendDecisionRequest dto) {
-        // TODO: 친구 요청 수락
+    public ResponseEntity<Map<String, String>> accept(@RequestBody FriendDecisionRequest dto,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        friendService.acceptFriend(dto, user.getId());
+
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "친구 요청을 수락했습니다.");
+        return ResponseEntity.ok(body);
     }
 
     @PutMapping("/reject")
-    public void reject(@RequestBody FriendDecisionRequest dto) {
-        // TODO: 친구 요청 거절
+    public ResponseEntity<Map<String, String>> reject(@RequestBody FriendDecisionRequest dto,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        friendService.rejectFriend(dto, user.getId());
+
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "친구 요청을 거절했습니다.");
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/{friendId}")
+    public ResponseEntity<FriendDetailResponseDto> getFriendDetail(
+            @PathVariable Long friendId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        Long currentUserId = user.getId();
+        FriendDetailResponseDto friendDetail = friendService.getFriendDetail(currentUserId, friendId);
+        return ResponseEntity.ok(friendDetail);
     }
 
     @GetMapping("/request/sent")
@@ -39,9 +71,10 @@ public class FriendController {
     }
 
     @GetMapping("/request/received")
-    public List<FriendResponseDto> getReceivedRequests(@RequestParam Long userId) {
-        // TODO: 받은 친구 요청 목록 조회
-        return Collections.emptyList();
+    public List<FriendResponseDto> getReceivedRequests(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        Long userId = user.getId();
+        return friendService.getReceivedRequests(userId);
     }
 
     @GetMapping("/friends")

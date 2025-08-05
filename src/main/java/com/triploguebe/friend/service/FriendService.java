@@ -1,9 +1,16 @@
 package com.triploguebe.friend.service;
 
 import com.triploguebe.friend.dto.FriendDecisionRequest;
+import com.triploguebe.friend.dto.FriendDetailResponseDto;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
+import com.triploguebe.friend.entity.Friendship;
+import com.triploguebe.friend.entity.FriendshipStatus;
 import com.triploguebe.friend.repository.FriendshipRepository;
+import com.triploguebe.global.exception.CustomException;
+import com.triploguebe.global.exception.ErrorCode;
+import com.triploguebe.user.entity.User;
+import com.triploguebe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +21,26 @@ import java.util.List;
 public class FriendService {
 
     private final FriendshipRepository friendshipRepository;
+    private final UserRepository userRepository;
 
     public void sendFriendRequest(FriendRequestDto dto) {
         // TODO: 친구 요청 저장
     }
 
-    public void acceptFriend(FriendDecisionRequest dto) {
-        // TODO: 요청 수락
+    public void acceptFriend(FriendDecisionRequest dto, Long userId) {
+        Friendship friendship = findPendingFriendshipOrThrow(dto.getRequestId());
+        validateRequestReceiver(friendship, userId);
+
+        friendship.setStatus(FriendshipStatus.ACCEPTED);
+        friendshipRepository.save(friendship);
     }
 
-    public void rejectFriend(FriendDecisionRequest dto) {
-        // TODO: 요청 거절
+    public void rejectFriend(FriendDecisionRequest dto, Long userId) {
+        Friendship friendship = findPendingFriendshipOrThrow(dto.getRequestId());
+        validateRequestReceiver(friendship, userId);
+
+        friendship.setStatus(FriendshipStatus.REJECTED);
+        friendshipRepository.save(friendship);
     }
 
     public List<FriendResponseDto> getSentRequests(Long userId) {
@@ -33,12 +49,48 @@ public class FriendService {
     }
 
     public List<FriendResponseDto> getReceivedRequests(Long userId) {
-        // TODO: 내가 받은 요청 조회
-        return null;
+        List<Friendship> friendships = friendshipRepository.findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING);
+        return friendships.stream()
+                .map(friendship -> {
+                    User sender = friendship.getRequester(); // 요청 보낸 사람
+                    return new FriendResponseDto(
+                            friendship.getFriendshipId(),
+                            sender.getId(),
+                            sender.getUsername(),
+                            friendship.getRequestDate().toString()
+                    );
+                })
+                .toList();
+    }
+
+    public FriendDetailResponseDto getFriendDetail(Long requesterId, Long targetUserId) {
+        Friendship friendship = friendshipRepository
+                .findFriendshipBetweenUsersWithStatus(requesterId, targetUserId, FriendshipStatus.ACCEPTED)
+                .orElseThrow(() -> new CustomException(ErrorCode.FRIEND_NOT_FOUND));
+
+        User friend = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return new FriendDetailResponseDto(
+                friend.getId(),
+                friend.getUsername(),
+                friend.getProfileImageUrl()
+        );
     }
 
     public List<FriendResponseDto> getFriends(Long userId) {
         // TODO: 내 친구 목록 조회
         return null;
+    }
+
+    private Friendship findPendingFriendshipOrThrow(Long requestId) {
+        return friendshipRepository.findByFriendshipIdAndStatus(requestId, FriendshipStatus.PENDING)
+                .orElseThrow(() -> new CustomException(ErrorCode.FRIENDSHIP_NOT_FOUND));
+    }
+
+    private void validateRequestReceiver(Friendship friendship, Long userId) {
+        if (!friendship.getFriendId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
     }
 }
