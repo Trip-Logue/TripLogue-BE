@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         if ((requestURI.equals("/api/users/login") && method.equals("POST")) ||
-                (requestURI.equals("/api/users/signup") && method.equals("POST"))) {
+                (requestURI.equals("/api/users/signup") && method.equals("POST")) ||
+                (requestURI.equals("/api/users/refresh") && method.equals("POST"))) {
 
             System.out.println("JWT 필터 건너뛰기: " + requestURI);
             chain.doFilter(request, response);
@@ -77,13 +77,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("jwt")) {
+                if (cookie.getName().equals("jwt") || cookie.getName().equals("refreshToken")) {
                     return cookie.getValue();
                 }
             }
         }
+
         return null;
     }
 

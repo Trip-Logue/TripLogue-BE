@@ -1,5 +1,6 @@
 package com.triploguebe.friend.entity;
 
+import com.triploguebe.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,7 @@ public class Friendship {
     private Long friendshipId;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private FriendshipStatus status;
 
     private LocalDateTime requestDate;
 
@@ -28,7 +29,12 @@ public class Friendship {
     // 친구 요청 받은 사람
     private Long friendId;
 
-    public enum Status {
-        PENDING, ACCEPTED, REJECTED, DELETED
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", insertable = false, updatable = false) // userId 필드가 DB 컬럼으로 이미 있어 중복 매핑 방지용
+    private User requester;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "friendId", insertable = false, updatable = false)
+    private User receiver;
+
 }

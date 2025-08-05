@@ -4,6 +4,15 @@ import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.entity.Friendship;
 import com.triploguebe.friend.repository.FriendshipRepository;
+import com.triploguebe.friend.dto.FriendDecisionRequest;
+import com.triploguebe.friend.dto.FriendDetailResponseDto;
+import com.triploguebe.friend.dto.FriendRequestDto;
+import com.triploguebe.friend.dto.FriendResponseDto;
+import com.triploguebe.friend.entity.Friendship;
+import com.triploguebe.friend.entity.FriendshipStatus;
+import com.triploguebe.friend.repository.FriendshipRepository;
+import com.triploguebe.global.exception.CustomException;
+import com.triploguebe.global.exception.ErrorCode;
 import com.triploguebe.user.entity.User;
 import com.triploguebe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +29,7 @@ public class FriendService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;  // UserRepository 추가
+    private final UserRepository userRepository;
 
     //친구 요청
     public void sendFriendRequest(FriendRequestDto dto) {
@@ -56,6 +66,21 @@ public class FriendService {
         List<Friendship> friends = friendshipRepository.findByUserIdOrFriendIdAndStatus(
                 userId, userId, Friendship.Status.ACCEPTED);
         return friends.stream().map(f -> toResponseDto(f, userId)).collect(Collectors.toList());
+
+    public void acceptFriend(FriendDecisionRequest dto, Long userId) {
+        Friendship friendship = findPendingFriendshipOrThrow(dto.getRequestId());
+        validateRequestReceiver(friendship, userId);
+
+        friendship.setStatus(FriendshipStatus.ACCEPTED);
+        friendshipRepository.save(friendship);
+    }
+
+    public void rejectFriend(FriendDecisionRequest dto, Long userId) {
+        Friendship friendship = findPendingFriendshipOrThrow(dto.getRequestId());
+        validateRequestReceiver(friendship, userId);
+
+        friendship.setStatus(FriendshipStatus.REJECTED);
+        friendshipRepository.save(friendship);
     }
 
     public FriendResponseDto getFriend(Long friendshipId) {
@@ -73,6 +98,35 @@ public class FriendService {
         }
         f.setStatus(Friendship.Status.DELETED);
         friendshipRepository.save(f);
+
+    public List<FriendResponseDto> getReceivedRequests(Long userId) {
+        List<Friendship> friendships = friendshipRepository.findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING);
+        return friendships.stream()
+                .map(friendship -> {
+                    User sender = friendship.getRequester(); // 요청 보낸 사람
+                    return new FriendResponseDto(
+                            friendship.getFriendshipId(),
+                            sender.getId(),
+                            sender.getUsername(),
+                            friendship.getRequestDate().toString()
+                    );
+                })
+                .toList();
+    }
+
+    public FriendDetailResponseDto getFriendDetail(Long requesterId, Long targetUserId) {
+        Friendship friendship = friendshipRepository
+                .findFriendshipBetweenUsersWithStatus(requesterId, targetUserId, FriendshipStatus.ACCEPTED)
+                .orElseThrow(() -> new CustomException(ErrorCode.FRIEND_NOT_FOUND));
+
+        User friend = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return new FriendDetailResponseDto(
+                friend.getId(),
+                friend.getUsername(),
+                friend.getProfileImageUrl()
+        );
     }
 
     private FriendResponseDto toResponseDto(Friendship f, Long currentUserId) {
@@ -92,5 +146,16 @@ public class FriendService {
                 .friendName(friendName)
                 .requestDate(f.getRequestDate() != null ? f.getRequestDate().toString() : null)
                 .build();
+    }
+
+    private Friendship findPendingFriendshipOrThrow(Long requestId) {
+        return friendshipRepository.findByFriendshipIdAndStatus(requestId, FriendshipStatus.PENDING)
+                .orElseThrow(() -> new CustomException(ErrorCode.FRIENDSHIP_NOT_FOUND));
+    }
+
+    private void validateRequestReceiver(Friendship friendship, Long userId) {
+        if (!friendship.getFriendId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
     }
 }
