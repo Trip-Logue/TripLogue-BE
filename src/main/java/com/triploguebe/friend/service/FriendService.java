@@ -3,7 +3,6 @@ package com.triploguebe.friend.service;
 import com.triploguebe.friend.dto.FriendRequestDto;
 import com.triploguebe.friend.dto.FriendResponseDto;
 import com.triploguebe.friend.entity.Friendship;
-import com.triploguebe.friend.repository.FriendshipRepository;
 import com.triploguebe.friend.dto.FriendDecisionRequest;
 import com.triploguebe.friend.dto.FriendDetailResponseDto;
 import com.triploguebe.friend.dto.FriendRequestDto;
@@ -29,7 +28,6 @@ public class FriendService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;  // UserRepository 추가
-    private final UserRepository userRepository;
 
     //친구 요청
     public void sendFriendRequest(FriendRequestDto dto) {
@@ -38,18 +36,18 @@ public class FriendService {
         }
         boolean exists = friendshipRepository.findByUserIdAndFriendIdAndStatusIn(
                 dto.getUserId(), dto.getFriendId(),
-                Arrays.asList(Friendship.Status.PENDING, Friendship.Status.ACCEPTED)).isPresent()
+                Arrays.asList(FriendshipStatus.PENDING, FriendshipStatus.ACCEPTED)).isPresent()
                 ||
                 friendshipRepository.findByUserIdAndFriendIdAndStatusIn(
                         dto.getFriendId(), dto.getUserId(),
-                        Arrays.asList(Friendship.Status.PENDING, Friendship.Status.ACCEPTED)).isPresent();
+                        Arrays.asList(FriendshipStatus.PENDING, FriendshipStatus.ACCEPTED)).isPresent();
         if (exists) {
             throw new IllegalArgumentException("이미 해당 사용자에게 친구 요청을 했거나 친구인 사용자입니다.");
         }
         Friendship friendship = Friendship.builder()
                 .userId(dto.getUserId())
                 .friendId(dto.getFriendId())
-                .status(Friendship.Status.PENDING)
+                .status(FriendshipStatus.PENDING)
                 .requestDate(LocalDateTime.now())
                 .build();
         friendshipRepository.save(friendship);
@@ -57,15 +55,16 @@ public class FriendService {
 
     //보낸 친구 요청 목록
     public List<FriendResponseDto> getSentRequests(Long userId) {
-        List<Friendship> sent = friendshipRepository.findByUserIdAndStatus(userId, Friendship.Status.PENDING);
+        List<Friendship> sent = friendshipRepository.findByUserIdAndStatus(userId, FriendshipStatus.PENDING);
         return sent.stream().map(f -> toResponseDto(f, userId)).collect(Collectors.toList());
     }
 
     //친구 목록
     public List<FriendResponseDto> getFriends(Long userId) {
         List<Friendship> friends = friendshipRepository.findByUserIdOrFriendIdAndStatus(
-                userId, userId, Friendship.Status.ACCEPTED);
+                userId, userId, FriendshipStatus.ACCEPTED);
         return friends.stream().map(f -> toResponseDto(f, userId)).collect(Collectors.toList());
+    }
 
     public void acceptFriend(FriendDecisionRequest dto, Long userId) {
         Friendship friendship = findPendingFriendshipOrThrow(dto.getRequestId());
@@ -96,8 +95,9 @@ public class FriendService {
         if (!f.getUserId().equals(userId) && !f.getFriendId().equals(userId)) {
             throw new IllegalArgumentException("자신의 친구 관계만 삭제할 수 있습니다.");
         }
-        f.setStatus(Friendship.Status.DELETED);
+        f.setStatus(FriendshipStatus.DELETED);
         friendshipRepository.save(f);
+    }
 
     public List<FriendResponseDto> getReceivedRequests(Long userId) {
         List<Friendship> friendships = friendshipRepository.findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING);
@@ -142,8 +142,8 @@ public class FriendService {
 
         return FriendResponseDto.builder()
                 .friendshipId(f.getFriendshipId())
-                .friendId(otherUserId)
-                .friendName(friendName)
+                .requesterId(otherUserId)
+                .requesterName(friendName)
                 .requestDate(f.getRequestDate() != null ? f.getRequestDate().toString() : null)
                 .build();
     }

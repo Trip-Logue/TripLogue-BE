@@ -9,16 +9,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
-    Optional<Friendship> findByUserIdAndFriendIdAndStatusIn(Long userId, Long friendId, List<Friendship.Status> status);
+    Optional<Friendship> findByUserIdAndFriendIdAndStatusIn(Long userId, Long friendId, List<FriendshipStatus> status);
 
-    List<Friendship> findByUserIdAndStatus(Long userId, Friendship.Status status);
+    List<Friendship> findByUserIdAndStatus(Long userId, FriendshipStatus status);
 
-    List<Friendship> findByUserIdOrFriendIdAndStatus(Long userId, Long friendId, Friendship.Status status);
-}
+    List<Friendship> findByUserIdOrFriendIdAndStatus(Long userId, Long friendId, FriendshipStatus status);
+
     Optional<Friendship> findByFriendshipIdAndStatus(Long friendshipId, FriendshipStatus status);
 
     List<Friendship> findAllByFriendIdAndStatus(Long FriendId, FriendshipStatus status);
