@@ -64,12 +64,10 @@ public class FriendService {
     }
 
     public FriendDetailResponseDto getFriendDetail(Long requesterId, Long targetUserId) {
-        // 순서 상관없이 친구 관계 조회
         Friendship friendship = friendshipRepository
                 .findFriendshipBetweenUsersWithStatus(requesterId, targetUserId, FriendshipStatus.ACCEPTED)
                 .orElseThrow(() -> new CustomException(ErrorCode.FRIEND_NOT_FOUND));
 
-        // 친구 정보 조회 (targetUserId 기준)
         User friend = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -85,13 +83,11 @@ public class FriendService {
         return null;
     }
 
-    // 요청 상태가 PENDING인 경우
     private Friendship findPendingFriendshipOrThrow(Long requestId) {
         return friendshipRepository.findByFriendshipIdAndStatus(requestId, FriendshipStatus.PENDING)
                 .orElseThrow(() -> new CustomException(ErrorCode.FRIENDSHIP_NOT_FOUND));
     }
 
-    // 요청 수신자인지 검증
     private void validateRequestReceiver(Friendship friendship, Long userId) {
         if (!friendship.getFriendId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);

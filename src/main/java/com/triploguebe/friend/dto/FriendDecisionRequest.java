@@ -7,5 +7,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendDecisionRequest {
-    private Long requestId; // 요청 보낸 사람의 user_id
+    private Long requestId;
 }

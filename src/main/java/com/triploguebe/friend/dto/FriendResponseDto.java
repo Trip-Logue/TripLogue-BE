@@ -10,13 +10,13 @@ import lombok.*;
 @Builder
 public class FriendResponseDto {
     private Long friendshipId;
-    private Long requesterId;         // 요청 보낸 사람 ID
-    private String requesterName;     // 요청 보낸 사람 이름
+    private Long requesterId;
+    private String requesterName;
     private String requestDate;
 
     public FriendResponseDto(Friendship friendship) {
         this.friendshipId = friendship.getFriendshipId();
-        this.requesterId = friendship.getUserId(); // 요청 보낸 사람의 ID
+        this.requesterId = friendship.getUserId();
         this.requesterName = friendship.getRequester() != null ? friendship.getRequester().getUsername() : null;
         this.requestDate = friendship.getRequestDate() != null ? friendship.getRequestDate().toString() : null;
     }
