@@ -84,12 +84,6 @@ public class FriendController {
         return friendService.getFriends(userId);
     }
 
-    //친구 정보
-    @GetMapping("/{friendshipId}")
-    public FriendResponseDto getFriend(@PathVariable Long friendshipId) {
-        return friendService.getFriend(friendshipId);
-    }
-
     //친구 삭제
     @DeleteMapping("/{friendshipId}")
     public void deleteFriend(@PathVariable Long friendshipId, @RequestParam Long userId) {
