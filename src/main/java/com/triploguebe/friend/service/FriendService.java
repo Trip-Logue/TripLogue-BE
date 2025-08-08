@@ -83,12 +83,6 @@ public class FriendService {
         friendshipRepository.save(friendship);
     }
 
-    public FriendResponseDto getFriend(Long friendshipId) {
-        Friendship f = friendshipRepository.findById(friendshipId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 정보를 찾을 수 없습니다."));
-        return toResponseDto(f, null);
-    }
-
     //친구 삭제
     public void deleteFriend(Long friendshipId, Long userId) {
         Friendship f = friendshipRepository.findById(friendshipId)
