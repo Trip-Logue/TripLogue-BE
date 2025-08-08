@@ -61,9 +61,10 @@ public class FriendService {
 
     //친구 목록
     public List<FriendResponseDto> getFriends(Long userId) {
-        List<Friendship> friends = friendshipRepository.findByUserIdOrFriendIdAndStatus(
-                userId, userId, FriendshipStatus.ACCEPTED);
-        return friends.stream().map(f -> toResponseDto(f, userId)).collect(Collectors.toList());
+        List<Friendship> friends = friendshipRepository.findFriendsByUserIdAndStatus(userId, FriendshipStatus.ACCEPTED);
+        return friends.stream()
+                .map(f -> toResponseDto(f, userId))
+                .collect(Collectors.toList());
     }
 
     public void acceptFriend(FriendDecisionRequest dto, Long userId) {

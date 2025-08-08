@@ -28,4 +28,10 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             @Param("userId2") Long userId2,
             @Param("status") FriendshipStatus status
     );
+
+    @Query("SELECT f FROM Friendship f WHERE " +
+            "((f.userId = :userId OR f.friendId = :userId) AND f.status = :status)")
+    List<Friendship> findFriendsByUserIdAndStatus(@Param("userId") Long userId,
+                                                  @Param("status") FriendshipStatus status);
+
 }
