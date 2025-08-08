@@ -1,9 +1,9 @@
 package com.triploguebe.global.service;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
@@ -18,12 +18,11 @@ public class AwsS3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-    @Autowired
     public AwsS3Service(AmazonS3 amazonS3) {
         this.amazonS3 = amazonS3;
     }
 
-    public String uploadFile(MultipartFile file, String path, String fileName){
+    public String uploadFile(MultipartFile file, String path, String fileName) {
         try {
             String newFileName = getNewFileName(file, fileName);
 
@@ -33,14 +32,20 @@ public class AwsS3Service {
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
 
-            amazonS3.putObject(bucketName, path + newFileName, fileInputStream, metadata);
+            String fullPath = path.endsWith("/") ? path + newFileName : path + "/" + newFileName;
+
+            amazonS3.putObject(bucketName, fullPath, fileInputStream, metadata);
             fileInputStream.close();
 
-            return newFileName;
+            return fullPath;
 
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new IllegalArgumentException("S3 파일 업로드에 실패하였습니다.");
         }
+    }
+
+    public void deleteFile(String fullPath) {
+        amazonS3.deleteObject(bucketName, fullPath);
     }
 
     private static String getNewFileName(MultipartFile file, String fileName) {
@@ -49,9 +54,8 @@ public class AwsS3Service {
             throw new IllegalArgumentException("파일 이름이 비어있습니다.");
         }
 
-        String fileExtension = originalFileName.contains(".")
-                ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1)
-                : "";
+        String fileExtension = originalFileName.contains(".") ?
+                originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "";
 
         if (fileExtension.isEmpty()) {
             throw new IllegalArgumentException("파일 확장자가 올바르지 않습니다.");
@@ -60,7 +64,7 @@ public class AwsS3Service {
         return fileName + "." + fileExtension;
     }
 
-    public void deleteFile(String fullPath) {
-        amazonS3.deleteObject(bucketName, fullPath);
+    public String getFileUrl(String s3Key) {
+        return "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + s3Key;
     }
 }
