@@ -111,8 +111,7 @@ public class FriendService {
                 .findFriendshipBetweenUsersWithStatus(requesterId, targetUserId, FriendshipStatus.ACCEPTED)
                 .orElseThrow(() -> new CustomException(ErrorCode.FRIEND_NOT_FOUND));
 
-        User friend = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User friend = friendship.getReceiver();
 
         return new FriendDetailResponseDto(
                 friend.getId(),
