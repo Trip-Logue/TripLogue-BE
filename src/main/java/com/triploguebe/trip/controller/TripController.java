@@ -25,7 +25,6 @@ public class TripController {
 
     private final TripService tripService;
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripCreateRequest request,
@@ -39,27 +38,19 @@ public class TripController {
     @PutMapping("/{triplogId}")
     public ResponseEntity<TripCreateResponse> updateTrip(@PathVariable Long triplogId, @RequestBody @Valid TripUpdateRequest request, @AuthenticationPrincipal UserDetails userDetails) {
 
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+        User user = userService.findByUsername(userDetails.getUsername());
         TripCreateResponse response = tripService.updateTrip(triplogId, request, user);
-
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{triplogId}")
     public ResponseEntity<?> deleteTrip(@PathVariable Long triplogId, @AuthenticationPrincipal UserDetails userDetails) {
 
-        // Username으로 User 엔티티 조회
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-
+        User user = userService.findByUsername(userDetails.getUsername());
         tripService.deleteTrip(triplogId, user);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "여행 기록이 삭제되었습니다.");
-
         return ResponseEntity.ok(response);
     }
 
