@@ -23,8 +23,11 @@ public enum ErrorCode {
     ALREADY_FRIENDS(400, "이미 요청을 보냈거나 친구입니다."),
     FRIENDSHIP_NOT_FOUND(404, "친구 요청을 찾을 수 없습니다."),
     CANNOT_ADD_SELF(400, "자기 자신은 친구로 추가할 수 없습니다."),
-    FRIEND_NOT_FOUND(404, "해당 친구가 존재하지 않습니다.");
-
+    FRIEND_NOT_FOUND(404, "해당 친구가 존재하지 않습니다."),
+    //사진 관련
+    PHOTO_NOT_FOUND(404, "해당 사진을 찾을 수 없습니다."),
+    //S3 관련
+    S3_UPLOAD_FAILED(500, "S3 파일 업로드에 실패했습니다.");
 
     private final int status;
     private final String message;
